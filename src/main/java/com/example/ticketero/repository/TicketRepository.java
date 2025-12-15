@@ -53,7 +53,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     @Query("""
         SELECT COUNT(t) FROM Ticket t 
-        WHERE DATE(t.createdAt) = CURRENT_DATE
+        WHERE t.createdAt >= CURRENT_DATE
         """)
     long countTicketsToday();
 }
