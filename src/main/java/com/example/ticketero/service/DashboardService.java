@@ -56,8 +56,8 @@ public class DashboardService {
                 .map(this::getQueueStats)
                 .toList();
         
-        // Advisor stats (simplificado por ahora)
-        List<DashboardResponse.AdvisorStats> advisorStats = List.of();
+        // Advisor stats
+        List<DashboardResponse.AdvisorStats> advisorStats = getAdvisorStats();
         
         return new DashboardResponse(
                 summary,
@@ -84,6 +84,22 @@ public class DashboardService {
                 1, // Simplificado
                 List.of() // Vacío por ahora
         );
+    }
+    
+    /**
+     * Obtiene estadísticas de asesores
+     */
+    private List<DashboardResponse.AdvisorStats> getAdvisorStats() {
+        return advisorRepository.findAll().stream()
+                .map(advisor -> new DashboardResponse.AdvisorStats(
+                        advisor.getId(),
+                        advisor.getName(),
+                        advisor.getStatus().name(),
+                        advisor.getModuleNumber(),
+                        advisor.getAssignedTicketsCount(),
+                        null // currentTicket simplificado por ahora
+                ))
+                .toList();
     }
     
     /**

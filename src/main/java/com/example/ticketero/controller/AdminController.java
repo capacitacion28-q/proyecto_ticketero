@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * Controller administrativo para dashboard y gestión
  * Endpoints para personal administrativo y supervisores
@@ -82,5 +84,38 @@ public class AdminController {
             log.warn("Failed to assign ticket {}: {}", ticketId, e.getMessage());
             return ResponseEntity.badRequest().build();
         }
+    }
+    
+    /**
+     * Obtener lista de asesores
+     */
+    @GetMapping("/advisors")
+    public ResponseEntity<List<DashboardResponse.AdvisorStats>> getAdvisors() {
+        log.debug("Getting all advisors");
+        
+        DashboardResponse dashboard = dashboardService.getDashboardMetrics();
+        return ResponseEntity.ok(dashboard.advisorStats());
+    }
+    
+    /**
+     * Obtener estadísticas de asesores
+     */
+    @GetMapping("/advisors/stats")
+    public ResponseEntity<List<DashboardResponse.AdvisorStats>> getAdvisorStats() {
+        log.debug("Getting advisor statistics");
+        
+        DashboardResponse dashboard = dashboardService.getDashboardMetrics();
+        return ResponseEntity.ok(dashboard.advisorStats());
+    }
+    
+    /**
+     * Obtener resumen simplificado del dashboard
+     */
+    @GetMapping("/summary")
+    public ResponseEntity<DashboardResponse.SummaryStats> getSummary() {
+        log.debug("Getting dashboard summary");
+        
+        DashboardResponse dashboard = dashboardService.getDashboardMetrics();
+        return ResponseEntity.ok(dashboard.summary());
     }
 }
