@@ -42,32 +42,48 @@ public class TicketController {
     }
 
     /**
-     * Consultar ticket por ID
+     * Consultar ticket por UUID
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<TicketResponse> getById(@PathVariable Long id) {
-        log.debug("Getting ticket by id: {}", id);
-        
-        return ticketService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    /**
-     * Consultar posición en cola por código de referencia
-     */
-    @GetMapping("/position/{codigo}")
-    public ResponseEntity<QueuePositionResponse> getQueuePosition(@PathVariable UUID codigo) {
-        log.debug("Getting queue position for codigo: {}", codigo);
+    @GetMapping("/{uuid}")
+    public ResponseEntity<TicketResponse> getByUuid(@PathVariable String uuid) {
+        log.debug("Getting ticket by UUID: {}", uuid);
         
         try {
-            QueuePositionResponse response = ticketService.getQueuePosition(codigo);
+            UUID codigoReferencia = UUID.fromString(uuid);
+            QueuePositionResponse position = ticketService.getQueuePosition(codigoReferencia);
+            
+            // Convertir a TicketResponse
+            TicketResponse response = new TicketResponse(
+                null, codigoReferencia, position.numero(), null, null,
+                null, position.queueType(), position.status(),
+                position.positionInQueue(), position.estimatedWaitMinutes(),
+                position.assignedAdvisorName(), null, null
+            );
+            
             return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            log.warn("Ticket not found for codigo: {}", codigo);
+        } catch (Exception e) {
+            log.warn("Ticket not found for UUID: {}", uuid);
             return ResponseEntity.notFound().build();
         }
     }
+    
+    /**
+     * Consultar posición por número de ticket
+     */
+    @GetMapping("/{numero}/position")
+    public ResponseEntity<QueuePositionResponse> getPositionByNumber(@PathVariable String numero) {
+        log.debug("Getting position for ticket number: {}", numero);
+        
+        try {
+            QueuePositionResponse response = ticketService.getQueuePositionByNumber(numero);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            log.warn("Ticket not found for number: {}", numero);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
 
     /**
      * Consultar tickets por cédula
