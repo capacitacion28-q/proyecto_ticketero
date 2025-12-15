@@ -4,6 +4,7 @@ import com.example.ticketero.model.dto.DashboardResponse;
 import com.example.ticketero.model.dto.QueueStatusResponse;
 import com.example.ticketero.model.enums.QueueType;
 import com.example.ticketero.model.enums.TicketStatus;
+import com.example.ticketero.service.AdvisorService;
 import com.example.ticketero.service.DashboardService;
 import com.example.ticketero.service.TicketService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class AdminController {
 
     private final DashboardService dashboardService;
     private final TicketService ticketService;
+    private final AdvisorService advisorService;
 
     /**
      * Obtener métricas del dashboard
@@ -118,4 +120,25 @@ public class AdminController {
         DashboardResponse dashboard = dashboardService.getDashboardMetrics();
         return ResponseEntity.ok(dashboard.summary());
     }
+    
+    /**
+     * Cambiar estado de un asesor
+     */
+    @PutMapping("/advisors/{id}/status")
+    public ResponseEntity<Void> updateAdvisorStatus(
+            @PathVariable Long id,
+            @RequestBody UpdateAdvisorStatusRequest request) {
+        
+        log.info("Admin updating advisor {} status to {}", id, request.status());
+        
+        try {
+            advisorService.updateStatus(id, request.status());
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            log.warn("Failed to update advisor {} status: {}", id, e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+    public record UpdateAdvisorStatusRequest(com.example.ticketero.model.enums.AdvisorStatus status) {}
 }
