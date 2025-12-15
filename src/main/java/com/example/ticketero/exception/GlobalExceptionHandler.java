@@ -35,6 +35,18 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Maneja conflictos de reglas de negocio
+     */
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(ConflictException ex) {
+        log.error("Business rule conflict: {}", ex.getMessage());
+        
+        return ResponseEntity
+                .status(409)
+                .body(new ErrorResponse(ex.getMessage(), 409, List.of(), LocalDateTime.now()));
+    }
+
+    /**
      * Maneja errores generales
      */
     @ExceptionHandler(RuntimeException.class)
