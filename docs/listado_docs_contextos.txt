@@ -1,0 +1,4 @@
+docs\project-requirements.md - Contexto de negocio
+docs\requerimientos\REQUERIMIENTOS-FUNCIONALES-COMPLETO.md - RF-001 a RF-008 con criterios de aceptación
+docs\arquitectura\ARQUITECTURA-COMPLETA.md - Stack tecnológico, diagramas, componentes, ADRs
+docs\PLAN-IMPLEMENTACION.md - Estructura de proyecto, migraciones, fases
