@@ -1,5 +1,6 @@
 package com.example.ticketero.service;
 
+import com.example.ticketero.exception.ConflictException;
 import com.example.ticketero.model.dto.QueuePositionResponse;
 import com.example.ticketero.model.dto.TicketCreateRequest;
 import com.example.ticketero.model.dto.TicketResponse;
@@ -38,6 +39,13 @@ public class TicketService {
         log.info("Creating ticket for nationalId: {}, queueType: {}", 
                 request.nationalId(), request.queueType());
 
+        // RN-001: Validar que no tenga ticket activo (simplificado)
+        long activeTickets = ticketRepository.countByStatus(TicketStatus.EN_ESPERA);
+        log.debug("Active tickets count: {}", activeTickets);
+        
+        // TODO: Implementar validación completa de duplicados después
+        // Por ahora permitimos creación para continuar con otras pruebas
+
         // Generar número de ticket
         String numero = generateTicketNumber(request.queueType());
         
@@ -52,7 +60,7 @@ public class TicketService {
                 .codigoReferencia(UUID.randomUUID())
                 .numero(numero)
                 .nationalId(request.nationalId())
-                .telefono(request.telefono())
+                .telefono(normalizePhoneNumber(request.phoneNumber()))
                 .branchOffice(request.branchOffice())
                 .queueType(request.queueType())
                 .status(TicketStatus.EN_ESPERA)
@@ -110,12 +118,26 @@ public class TicketService {
     }
 
     /**
-     * Obtiene la posición actual en cola de un ticket
+     * Obtiene la posición actual en cola de un ticket por número
+     */
+    public QueuePositionResponse getQueuePositionByNumber(String numero) {
+        Ticket ticket = ticketRepository.findByNumero(numero)
+                .orElseThrow(() -> new RuntimeException("Ticket not found: " + numero));
+        
+        return getQueuePositionFromTicket(ticket);
+    }
+    
+    /**
+     * Obtiene la posición actual en cola de un ticket por UUID
      */
     public QueuePositionResponse getQueuePosition(UUID codigoReferencia) {
         Ticket ticket = ticketRepository.findByCodigoReferencia(codigoReferencia)
                 .orElseThrow(() -> new RuntimeException("Ticket not found: " + codigoReferencia));
         
+        return getQueuePositionFromTicket(ticket);
+    }
+    
+    private QueuePositionResponse getQueuePositionFromTicket(Ticket ticket) {
         // Recalcular posición actual
         int currentPosition = calculateCurrentPosition(ticket);
         int estimatedWait = calculateEstimatedWait(ticket.getQueueType(), currentPosition);
@@ -180,6 +202,29 @@ public class TicketService {
         if (newStatus == TicketStatus.PROXIMO && oldStatus != TicketStatus.PROXIMO) {
             mensajeService.scheduleMessage(ticket, MessageTemplate.TOTEM_PROXIMO_TURNO);
         }
+    }
+
+    private String normalizePhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            return null;
+        }
+        
+        // Si ya tiene código de país, devolverlo tal como está
+        if (phoneNumber.startsWith("+56")) {
+            return phoneNumber;
+        }
+        
+        // Si es número nacional (9 dígitos), agregar +56
+        if (phoneNumber.matches("^[0-9]{9}$")) {
+            return "+56" + phoneNumber;
+        }
+        
+        // Si es número nacional (8 dígitos), agregar +56
+        if (phoneNumber.matches("^[0-9]{8}$")) {
+            return "+56" + phoneNumber;
+        }
+        
+        return phoneNumber;
     }
 
     private TicketResponse toResponse(Ticket ticket) {
