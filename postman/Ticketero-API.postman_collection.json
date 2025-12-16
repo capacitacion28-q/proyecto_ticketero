@@ -1,0 +1,417 @@
+{
+	"info": {
+		"_postman_id": "ticketero-api-collection",
+		"name": "Ticketero API",
+		"description": "Colección completa de endpoints para el sistema de tickets",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8081",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "🎫 Tickets - Público",
+			"item": [
+				{
+					"name": "Crear Ticket",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nationalId\": \"12345678\",\n  \"phoneNumber\": \"987654321\",\n  \"branchOffice\": \"Sucursal Centro\",\n  \"queueType\": \"GENERAL\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tickets",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tickets"
+							]
+						},
+						"description": "Crea un nuevo ticket en el sistema"
+					}
+				},
+				{
+					"name": "Consultar Ticket por UUID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tickets/{{ticketUuid}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"{{ticketUuid}}"
+							]
+						},
+						"description": "Obtiene información de un ticket por su UUID"
+					}
+				},
+				{
+					"name": "Consultar Posición por Número",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tickets/G01/position",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"G01",
+								"position"
+							]
+						},
+						"description": "Obtiene la posición actual de un ticket por su número"
+					}
+				},
+				{
+					"name": "Consultar Tickets por Cédula",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tickets/by-national-id/12345678",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"by-national-id",
+								"12345678"
+							]
+						},
+						"description": "Obtiene todos los tickets activos de una cédula"
+					}
+				}
+			],
+			"description": "Endpoints públicos para gestión de tickets desde tótems"
+		},
+		{
+			"name": "📊 Dashboard - Admin",
+			"item": [
+				{
+					"name": "Dashboard Completo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/dashboard",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"dashboard"
+							]
+						},
+						"description": "Obtiene métricas completas del dashboard"
+					}
+				},
+				{
+					"name": "Resumen Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/summary",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"summary"
+							]
+						},
+						"description": "Obtiene resumen simplificado del dashboard"
+					}
+				},
+				{
+					"name": "Estado Cola GENERAL",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/queue/GENERAL",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"queue",
+								"GENERAL"
+							]
+						},
+						"description": "Obtiene estado de la cola GENERAL"
+					}
+				},
+				{
+					"name": "Estado Cola PRIORITY",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/queue/PRIORITY",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"queue",
+								"PRIORITY"
+							]
+						},
+						"description": "Obtiene estado de la cola PRIORITY"
+					}
+				},
+				{
+					"name": "Estado Cola VIP",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/queue/VIP",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"queue",
+								"VIP"
+							]
+						},
+						"description": "Obtiene estado de la cola VIP"
+					}
+				}
+			],
+			"description": "Endpoints administrativos para dashboard y métricas"
+		},
+		{
+			"name": "👥 Asesores - Admin",
+			"item": [
+				{
+					"name": "Lista de Asesores",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/advisors",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"advisors"
+							]
+						},
+						"description": "Obtiene lista de todos los asesores"
+					}
+				},
+				{
+					"name": "Estadísticas de Asesores",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/advisors/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"advisors",
+								"stats"
+							]
+						},
+						"description": "Obtiene estadísticas detalladas de asesores"
+					}
+				},
+				{
+					"name": "Cambiar Estado Asesor",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"AVAILABLE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/advisors/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"advisors",
+								"1",
+								"status"
+							]
+						},
+						"description": "Cambia el estado de un asesor (AVAILABLE, BUSY, BREAK, OFFLINE)"
+					}
+				}
+			],
+			"description": "Endpoints administrativos para gestión de asesores"
+		},
+		{
+			"name": "🔧 Gestión Tickets - Admin",
+			"item": [
+				{
+					"name": "Actualizar Estado Ticket",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/tickets/1/status?status=ATENDIENDO",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"tickets",
+								"1",
+								"status"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "ATENDIENDO"
+								}
+							]
+						},
+						"description": "Actualiza el estado de un ticket (EN_ESPERA, PROXIMO, ATENDIENDO, COMPLETADO, CANCELADO)"
+					}
+				},
+				{
+					"name": "Asignar Ticket a Asesor",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/tickets/1/assign/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"tickets",
+								"1",
+								"assign",
+								"1"
+							]
+						},
+						"description": "Asigna un ticket específico a un asesor"
+					}
+				}
+			],
+			"description": "Endpoints administrativos para gestión de tickets"
+		},
+		{
+			"name": "🏥 Health Check",
+			"item": [
+				{
+					"name": "Health Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						},
+						"description": "Verifica el estado de salud de la aplicación"
+					}
+				},
+				{
+					"name": "Application Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/info",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"info"
+							]
+						},
+						"description": "Obtiene información de la aplicación"
+					}
+				},
+				{
+					"name": "Metrics",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/metrics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"metrics"
+							]
+						},
+						"description": "Obtiene métricas de la aplicación"
+					}
+				}
+			],
+			"description": "Endpoints de monitoreo y salud de la aplicación"
+		}
+	],
+	"event": [
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-save ticket UUID from create response",
+					"if (pm.response.json() && pm.response.json().codigoReferencia) {",
+					"    pm.globals.set('ticketUuid', pm.response.json().codigoReferencia);",
+					"}"
+				]
+			}
+		}
+	]
+}
