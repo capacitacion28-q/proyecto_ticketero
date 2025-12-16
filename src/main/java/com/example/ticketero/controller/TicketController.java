@@ -31,7 +31,7 @@ public class TicketController {
     @PostMapping
     public ResponseEntity<TicketResponse> create(@Valid @RequestBody TicketCreateRequest request) {
         log.info("🎫 [CREATE TICKET] Request: nationalId={}, queueType={}, phone={}", 
-                request.nationalId(), request.queueType(), request.phone());
+                request.nationalId(), request.queueType(), request.phoneNumber());
         
         try {
             TicketResponse response = ticketService.create(request);

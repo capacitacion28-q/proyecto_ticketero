@@ -39,9 +39,9 @@ public class AdminController {
             DashboardResponse response = dashboardService.getDashboardMetrics();
             
             log.info("✅ [DASHBOARD] Total tickets: {}, Active advisors: {}, Avg wait: {}min", 
-                    response.summary().totalTickets(), 
-                    response.summary().activeAdvisors(),
-                    response.summary().averageWaitTime());
+                    response.summary().totalTicketsToday(), 
+                    response.summary().availableAdvisors(),
+                    response.summary().avgWaitTime());
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -60,9 +60,9 @@ public class AdminController {
         try {
             QueueStatusResponse response = dashboardService.getQueueStatus(queueType);
             
-            log.info("✅ [QUEUE STATUS] {}: {} waiting, {} in progress, avg wait: {}min", 
-                    queueType, response.waitingCount(), response.inProgressCount(), 
-                    response.averageWaitTime());
+            log.info("✅ [QUEUE STATUS] {}: {} waiting, {} total, avg wait: {}min", 
+                    queueType, response.ticketsWaiting(), response.totalTickets(), 
+                    response.avgWaitMinutes());
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
