@@ -45,7 +45,7 @@ Monitoreo y salud de la aplicación:
 |----------|-------|-------------|
 | `baseUrl` | `http://localhost:8081` | URL base de la API |
 | `ticketUuid` | Auto-generado | UUID del último ticket creado |
-| `ticketNumber` | `G01` | Número de ticket para pruebas |
+| `ticketNumber` | `C01` | Número de ticket para pruebas |
 | `nationalId` | `12345678` | Cédula para pruebas |
 | `advisorId` | `1` | ID de asesor para pruebas |
 | `ticketId` | `1` | ID de ticket para pruebas admin |
@@ -64,7 +64,7 @@ POST /api/tickets
   "nationalId": "12345678",
   "phoneNumber": "987654321",
   "branchOffice": "Sucursal Centro",
-  "queueType": "GENERAL"
+  "queueType": "CAJA"
 }
 ```
 
@@ -80,7 +80,10 @@ GET /api/admin/dashboard
 
 ### 5. **Consultar Estado de Cola**
 ```
-GET /api/admin/queue/GENERAL
+GET /api/admin/queue/CAJA
+GET /api/admin/queue/PERSONAL_BANKER
+GET /api/admin/queue/EMPRESAS
+GET /api/admin/queue/GERENCIA
 ```
 
 ### 6. **Gestionar Ticket (Admin)**
@@ -90,9 +93,10 @@ PUT /api/admin/tickets/1/status?status=ATENDIENDO
 
 ## 📝 Tipos de Cola Disponibles
 
-- `GENERAL` - Cola general (prefijo G)
-- `PRIORITY` - Cola prioritaria (prefijo P)
-- `VIP` - Cola VIP (prefijo V)
+- `CAJA` - Caja (prefijo C, 5 min promedio)
+- `PERSONAL_BANKER` - Personal Banker (prefijo P, 15 min promedio)
+- `EMPRESAS` - Empresas (prefijo E, 20 min promedio)
+- `GERENCIA` - Gerencia (prefijo G, 30 min promedio)
 
 ## 📝 Estados de Ticket
 
