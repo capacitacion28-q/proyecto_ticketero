@@ -50,16 +50,15 @@ Monitoreo y salud de la aplicación:
 | `advisorId` | `1` | ID de asesor para pruebas |
 | `ticketId` | `1` | ID de ticket para pruebas admin |
 
-## 🎯 Flujo de Pruebas Recomendado
+## 🎯 Escenario Completo: Flujo de Atención de Ticket
 
-### 1. **Verificar Salud**
-```
-GET /actuator/health
-```
+### **📋 Escenario:** Usuario solicita ticket → Espera → Asignación → Atención → Completado
 
-### 2. **Crear Ticket**
-```
+### **1. 🎫 Usuario pide un ticket**
+```http
 POST /api/tickets
+Content-Type: application/json
+
 {
   "nationalId": "12345678",
   "phoneNumber": "987654321",
@@ -67,28 +66,128 @@ POST /api/tickets
   "queueType": "CAJA"
 }
 ```
+**Respuesta esperada:**
+```json
+{
+  "id": 13,
+  "numero": "C11",
+  "status": "EN_ESPERA",
+  "positionInQueue": 1,
+  "estimatedWaitMinutes": 5,
+  "codigoReferencia": "087ba617-e999-4cb2-8e69-b475ec907917"
+}
+```
+**📝 Guardar:** `numero` y `codigoReferencia` para siguientes pasos
 
-### 3. **Consultar Ticket Creado**
+### **2. ⏳ Verificar que está en espera**
+```http
+GET /api/tickets/{{codigoReferencia}}
 ```
-GET /api/tickets/{{ticketUuid}}
+**Respuesta esperada:**
+```json
+{
+  "numero": "C11",
+  "status": "ATENDIENDO",  // Scheduler automático
+  "positionInQueue": 1
+}
 ```
 
-### 4. **Ver Dashboard**
+### **3. 📊 Ver estado inicial del dashboard**
+```http
+GET /api/admin/summary
 ```
+**Respuesta esperada:**
+```json
+{
+  "totalTicketsToday": 3,
+  "ticketsInQueue": 0,
+  "ticketsCompleted": 0,
+  "availableAdvisors": 5
+}
+```
+
+### **4. 👨💼 Ejecutivo se desocupa**
+```http
+PUT /api/admin/advisors/1/status
+Content-Type: application/json
+
+{
+  "status": "AVAILABLE"
+}
+```
+**Respuesta:** `200 OK`
+
+### **5. 🔗 Asignar ticket al ejecutivo**
+```http
+PUT /api/admin/tickets/{{ticketId}}/assign/1
+```
+**Usar el `id` del ticket creado en paso 1**
+**Respuesta:** `200 OK`
+
+### **6. 🏃♂️ Verificar que está siendo atendido**
+```http
+GET /api/tickets/{{numero}}/position
+```
+**Respuesta esperada:**
+```json
+{
+  "numero": "C11",
+  "status": "ATENDIENDO",
+  "assignedModuleNumber": 1,
+  "message": "Ticket en cola"
+}
+```
+
+### **7. ✅ Completar la atención**
+```http
+PUT /api/admin/tickets/{{ticketId}}/status?status=COMPLETADO
+```
+**Respuesta:** `200 OK`
+
+### **8. 🔍 Verificar estado final**
+```http
+GET /api/tickets/{{numero}}/position
+```
+**Respuesta esperada:**
+```json
+{
+  "numero": "C11",
+  "status": "COMPLETADO",
+  "assignedModuleNumber": 1
+}
+```
+
+### **9. 📈 Dashboard final**
+```http
+GET /api/admin/summary
+```
+**Respuesta esperada:**
+```json
+{
+  "totalTicketsToday": 3,
+  "ticketsCompleted": 1,  // ✅ Incrementado
+  "availableAdvisors": 5
+}
+```
+
+## 🎯 Flujo Rápido de Verificación
+
+### **Health Check**
+```http
+GET /actuator/health
+```
+
+### **Ver Dashboard Completo**
+```http
 GET /api/admin/dashboard
 ```
 
-### 5. **Consultar Estado de Cola**
-```
+### **Consultar Estado de Colas**
+```http
 GET /api/admin/queue/CAJA
 GET /api/admin/queue/PERSONAL_BANKER
 GET /api/admin/queue/EMPRESAS
 GET /api/admin/queue/GERENCIA
-```
-
-### 6. **Gestionar Ticket (Admin)**
-```
-PUT /api/admin/tickets/1/status?status=ATENDIENDO
 ```
 
 ## 📝 Tipos de Cola Disponibles
@@ -113,9 +212,14 @@ PUT /api/admin/tickets/1/status?status=ATENDIENDO
 - `BREAK` - En descanso
 - `OFFLINE` - Fuera de línea
 
-## 🔄 Auto-Variables
+## 🔄 Variables para el Escenario
 
-La colección incluye un script que automáticamente guarda el UUID del ticket creado en la variable `ticketUuid` para usar en otras peticiones.
+**Después del paso 1, actualizar estas variables manualmente:**
+- `ticketUuid` = UUID del ticket creado
+- `ticketNumber` = Número del ticket (ej: C11)
+- `ticketId` = ID numérico del ticket (ej: 13)
+
+**La colección incluye un script que automáticamente guarda el UUID del ticket creado.**
 
 ## 🐛 Troubleshooting
 
