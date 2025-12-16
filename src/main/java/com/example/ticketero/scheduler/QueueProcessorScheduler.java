@@ -22,13 +22,17 @@ public class QueueProcessorScheduler {
      */
     @Scheduled(fixedRate = 5000) // 5 segundos
     public void processQueue() {
-        log.trace("Starting queue processing job");
+        log.debug("🔄 [SCHEDULER] Starting queue processing...");
         
         try {
-            queueProcessorService.processQueue();
-            log.trace("Queue processing job completed");
+            int processed = queueProcessorService.processQueue();
+            if (processed > 0) {
+                log.info("✅ [QUEUE PROCESSED] {} tickets processed", processed);
+            } else {
+                log.debug("🔄 [QUEUE PROCESSED] No tickets to process");
+            }
         } catch (Exception e) {
-            log.error("Error in queue processing job: {}", e.getMessage(), e);
+            log.error("❌ [QUEUE PROCESSING ERROR] {}", e.getMessage(), e);
         }
     }
 
@@ -37,13 +41,17 @@ public class QueueProcessorScheduler {
      */
     @Scheduled(fixedRate = 10000) // 10 segundos
     public void updateQueuePositions() {
-        log.trace("Starting queue position update job");
+        log.debug("📍 [SCHEDULER] Updating queue positions...");
         
         try {
-            queueProcessorService.updateQueuePositions();
-            log.trace("Queue position update job completed");
+            int updated = queueProcessorService.updateQueuePositions();
+            if (updated > 0) {
+                log.info("✅ [POSITIONS UPDATED] {} tickets updated", updated);
+            } else {
+                log.debug("📍 [POSITIONS UPDATED] No positions to update");
+            }
         } catch (Exception e) {
-            log.error("Error in queue position update job: {}", e.getMessage(), e);
+            log.error("❌ [POSITION UPDATE ERROR] {}", e.getMessage(), e);
         }
     }
 }

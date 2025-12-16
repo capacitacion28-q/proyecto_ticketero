@@ -30,15 +30,22 @@ public class TicketController {
      */
     @PostMapping
     public ResponseEntity<TicketResponse> create(@Valid @RequestBody TicketCreateRequest request) {
-        log.info("Creating ticket for nationalId: {}, queueType: {}", 
-                request.nationalId(), request.queueType());
+        log.info("🎫 [CREATE TICKET] Request: nationalId={}, queueType={}, phone={}", 
+                request.nationalId(), request.queueType(), request.phone());
         
-        TicketResponse response = ticketService.create(request);
-        
-        log.info("Ticket created: {} at position {}", 
-                response.numero(), response.positionInQueue());
-        
-        return ResponseEntity.status(201).body(response);
+        try {
+            TicketResponse response = ticketService.create(request);
+            
+            log.info("✅ [TICKET CREATED] Number: {}, Position: {}, UUID: {}, EstimatedWait: {}min", 
+                    response.numero(), response.positionInQueue(), 
+                    response.codigoReferencia(), response.estimatedWaitMinutes());
+            
+            return ResponseEntity.status(201).body(response);
+        } catch (Exception e) {
+            log.error("❌ [CREATE TICKET ERROR] nationalId={}, error: {}", 
+                    request.nationalId(), e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -46,11 +53,15 @@ public class TicketController {
      */
     @GetMapping("/{uuid}")
     public ResponseEntity<TicketResponse> getByUuid(@PathVariable String uuid) {
-        log.debug("Getting ticket by UUID: {}", uuid);
+        log.info("🔍 [GET TICKET] UUID: {}", uuid);
         
         try {
             UUID codigoReferencia = UUID.fromString(uuid);
             QueuePositionResponse position = ticketService.getQueuePosition(codigoReferencia);
+            
+            log.info("✅ [TICKET FOUND] Number: {}, Status: {}, Position: {}, Advisor: {}", 
+                    position.numero(), position.status(), position.positionInQueue(), 
+                    position.assignedAdvisorName());
             
             // Convertir a TicketResponse
             TicketResponse response = new TicketResponse(
@@ -62,7 +73,7 @@ public class TicketController {
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.warn("Ticket not found for UUID: {}", uuid);
+            log.warn("❌ [TICKET NOT FOUND] UUID: {}, error: {}", uuid, e.getMessage());
             return ResponseEntity.notFound().build();
         }
     }
@@ -72,13 +83,18 @@ public class TicketController {
      */
     @GetMapping("/{numero}/position")
     public ResponseEntity<QueuePositionResponse> getPositionByNumber(@PathVariable String numero) {
-        log.debug("Getting position for ticket number: {}", numero);
+        log.info("📍 [GET POSITION] Ticket number: {}", numero);
         
         try {
             QueuePositionResponse response = ticketService.getQueuePositionByNumber(numero);
+            
+            log.info("✅ [POSITION FOUND] Number: {}, Position: {}, Status: {}, Wait: {}min", 
+                    response.numero(), response.positionInQueue(), 
+                    response.status(), response.estimatedWaitMinutes());
+            
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            log.warn("Ticket not found for number: {}", numero);
+            log.warn("❌ [POSITION NOT FOUND] Number: {}, error: {}", numero, e.getMessage());
             return ResponseEntity.notFound().build();
         }
     }
@@ -90,9 +106,19 @@ public class TicketController {
      */
     @GetMapping("/by-national-id/{nationalId}")
     public ResponseEntity<List<TicketResponse>> getByNationalId(@PathVariable String nationalId) {
-        log.debug("Getting tickets for nationalId: {}", nationalId);
+        log.info("👤 [GET BY NATIONAL ID] nationalId: {}", nationalId);
         
-        List<TicketResponse> tickets = ticketService.findByNationalId(nationalId);
-        return ResponseEntity.ok(tickets);
+        try {
+            List<TicketResponse> tickets = ticketService.findByNationalId(nationalId);
+            
+            log.info("✅ [TICKETS FOUND] nationalId: {}, count: {}", 
+                    nationalId, tickets.size());
+            
+            return ResponseEntity.ok(tickets);
+        } catch (Exception e) {
+            log.error("❌ [GET BY NATIONAL ID ERROR] nationalId: {}, error: {}", 
+                    nationalId, e.getMessage());
+            throw e;
+        }
     }
 }

@@ -30,7 +30,7 @@ public class QueueProcessorService {
      * Procesa la cola asignando tickets a asesores disponibles
      */
     @Transactional
-    public void processQueue() {
+    public int processQueue() {
         log.debug("Processing queue for ticket assignments");
         
         // Buscar asesor disponible
@@ -38,7 +38,7 @@ public class QueueProcessorService {
         
         if (availableAdvisor.isEmpty()) {
             log.debug("No available advisors found");
-            return;
+            return 0;
         }
         
         // Buscar próximo ticket en espera
@@ -46,7 +46,7 @@ public class QueueProcessorService {
         
         if (waitingTickets.isEmpty()) {
             log.debug("No tickets waiting in queue");
-            return;
+            return 0;
         }
         
         // Asignar primer ticket al asesor
@@ -54,18 +54,20 @@ public class QueueProcessorService {
         Advisor advisor = availableAdvisor.get();
         
         assignTicketToAdvisor(ticket, advisor);
+        return 1;
     }
 
     /**
      * Actualiza posiciones en cola para todos los tickets activos
      */
     @Transactional
-    public void updateQueuePositions() {
+    public int updateQueuePositions() {
         log.debug("Updating queue positions");
         
         // Obtener tickets en espera ordenados por fecha de creación
         List<Ticket> waitingTickets = ticketRepository.findByStatusOrderByCreatedAtAsc(TicketStatus.EN_ESPERA);
         
+        int updatedCount = 0;
         for (int i = 0; i < waitingTickets.size(); i++) {
             Ticket ticket = waitingTickets.get(i);
             int newPosition = i + 1;
@@ -81,10 +83,13 @@ public class QueueProcessorService {
                 if (newPosition <= 3 && ticket.getStatus() == TicketStatus.EN_ESPERA) {
                     ticketService.updateStatus(ticket.getId(), TicketStatus.PROXIMO);
                 }
+                
+                updatedCount++;
             }
         }
         
-        log.debug("Updated positions for {} tickets", waitingTickets.size());
+        log.debug("Updated positions for {} tickets", updatedCount);
+        return updatedCount;
     }
 
     // Métodos privados

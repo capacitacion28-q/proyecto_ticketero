@@ -36,31 +36,36 @@ public class TicketService {
      */
     @Transactional
     public TicketResponse create(TicketCreateRequest request) {
-        log.info("Creating ticket for nationalId: {}, queueType: {}", 
-                request.nationalId(), request.queueType());
+        log.info("🎫 [SERVICE CREATE] nationalId: {}, queueType: {}, phone: {}", 
+                request.nationalId(), request.queueType(), request.phoneNumber());
 
         // RN-001: Validar que no tenga ticket activo (simplificado)
         long activeTickets = ticketRepository.countByStatus(TicketStatus.EN_ESPERA);
-        log.debug("Active tickets count: {}", activeTickets);
+        log.debug("📊 [QUEUE COUNT] Active tickets in system: {}", activeTickets);
         
-        // TODO: Implementar validación completa de duplicados después
-        // Por ahora permitimos creación para continuar con otras pruebas
-
         // Generar número de ticket
         String numero = generateTicketNumber(request.queueType());
+        log.debug("🏷️ [TICKET NUMBER] Generated: {}", numero);
         
         // Calcular posición en cola
         int positionInQueue = calculateQueuePosition(request.queueType());
+        log.debug("📍 [QUEUE POSITION] Position: {}", positionInQueue);
         
         // Calcular tiempo estimado
         int estimatedWaitMinutes = calculateEstimatedWait(request.queueType(), positionInQueue);
+        log.debug("⏰ [ESTIMATED WAIT] {} minutes", estimatedWaitMinutes);
+
+        // Normalizar teléfono
+        String normalizedPhone = normalizePhoneNumber(request.phoneNumber());
+        log.debug("📞 [PHONE NORMALIZED] {} -> {}", request.phoneNumber(), normalizedPhone);
 
         // Crear ticket
+        UUID uuid = UUID.randomUUID();
         Ticket ticket = Ticket.builder()
-                .codigoReferencia(UUID.randomUUID())
+                .codigoReferencia(uuid)
                 .numero(numero)
                 .nationalId(request.nationalId())
-                .telefono(normalizePhoneNumber(request.phoneNumber()))
+                .telefono(normalizedPhone)
                 .branchOffice(request.branchOffice())
                 .queueType(request.queueType())
                 .status(TicketStatus.EN_ESPERA)
@@ -68,12 +73,15 @@ public class TicketService {
                 .estimatedWaitMinutes(estimatedWaitMinutes)
                 .build();
 
+        log.debug("💾 [SAVING TICKET] UUID: {}, Number: {}", uuid, numero);
         Ticket saved = ticketRepository.save(ticket);
         
         // Programar mensaje de confirmación
+        log.debug("💬 [SCHEDULING MESSAGE] Template: TOTEM_TICKET_CREADO");
         mensajeService.scheduleMessage(saved, MessageTemplate.TOTEM_TICKET_CREADO);
         
-        log.info("Ticket created: {} at position {}", saved.getNumero(), positionInQueue);
+        log.info("✅ [TICKET CREATED] Number: {}, Position: {}, Wait: {}min, UUID: {}", 
+                saved.getNumero(), positionInQueue, estimatedWaitMinutes, uuid);
         
         return toResponse(saved);
     }
@@ -103,18 +111,24 @@ public class TicketService {
      */
     @Transactional
     public void updateStatus(Long ticketId, TicketStatus newStatus) {
-        log.info("Updating ticket {} status to {}", ticketId, newStatus);
+        log.info("🔄 [SERVICE UPDATE STATUS] Ticket: {}, New status: {}", ticketId, newStatus);
         
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new RuntimeException("Ticket not found: " + ticketId));
+                .orElseThrow(() -> {
+                    log.error("❌ [TICKET NOT FOUND] ID: {}", ticketId);
+                    return new RuntimeException("Ticket not found: " + ticketId);
+                });
         
         TicketStatus oldStatus = ticket.getStatus();
+        log.debug("🔄 [STATUS CHANGE] Ticket: {} from {} to {}", ticketId, oldStatus, newStatus);
+        
         ticket.setStatus(newStatus);
         
         // Programar mensajes según cambio de estado
         scheduleStatusChangeMessages(ticket, oldStatus, newStatus);
         
-        log.info("Ticket {} status updated from {} to {}", ticketId, oldStatus, newStatus);
+        log.info("✅ [STATUS UPDATED] Ticket: {} ({}) {} -> {}", 
+                ticketId, ticket.getNumero(), oldStatus, newStatus);
     }
 
     /**
@@ -159,18 +173,27 @@ public class TicketService {
      */
     @Transactional
     public void assignToAdvisor(Long ticketId, Long advisorId) {
-        log.info("Assigning ticket {} to advisor {}", ticketId, advisorId);
+        log.info("👥 [SERVICE ASSIGN] Ticket: {} -> Advisor: {}", ticketId, advisorId);
         
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new RuntimeException("Ticket not found: " + ticketId));
+                .orElseThrow(() -> {
+                    log.error("❌ [ASSIGN ERROR] Ticket not found: {}", ticketId);
+                    return new RuntimeException("Ticket not found: " + ticketId);
+                });
+        
+        TicketStatus oldStatus = ticket.getStatus();
+        log.debug("🔄 [ASSIGN STATUS] Ticket: {} ({}) {} -> ATENDIENDO", 
+                ticketId, ticket.getNumero(), oldStatus);
         
         // TODO: Asignar advisor cuando esté implementado
         ticket.setStatus(TicketStatus.ATENDIENDO);
         
         // Programar mensaje "es tu turno"
+        log.debug("💬 [SCHEDULING MESSAGE] Template: TOTEM_ES_TU_TURNO");
         mensajeService.scheduleMessage(ticket, MessageTemplate.TOTEM_ES_TU_TURNO);
         
-        log.info("Ticket {} assigned to advisor {}", ticketId, advisorId);
+        log.info("✅ [ASSIGNMENT SUCCESS] Ticket: {} ({}) assigned to advisor: {}", 
+                ticketId, ticket.getNumero(), advisorId);
     }
 
     // Métodos privados de utilidad

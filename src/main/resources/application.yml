@@ -40,12 +40,21 @@ management:
     health:
       show-details: when-authorized
 
-# Logging
+# Logging Configuration
 logging:
   level:
-    com.example.ticketero: INFO
-    org.springframework: WARN
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    root: INFO
+    com.example.ticketero: DEBUG
+    com.example.ticketero.controller: INFO
+    com.example.ticketero.service: INFO
+    com.example.ticketero.scheduler: INFO
+    org.springframework.web: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    org.springframework.transaction: DEBUG
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  file:
+    name: logs/ticketero.log

@@ -22,13 +22,17 @@ public class MessageScheduler {
      */
     @Scheduled(fixedRate = 60000) // 60 segundos
     public void processPendingMessages() {
-        log.debug("Starting message processing job");
+        log.debug("💬 [SCHEDULER] Processing pending messages...");
         
         try {
-            mensajeService.processPendingMessages();
-            log.debug("Message processing job completed");
+            int processed = mensajeService.processPendingMessages();
+            if (processed > 0) {
+                log.info("✅ [MESSAGES SENT] {} messages processed", processed);
+            } else {
+                log.debug("💬 [MESSAGES PROCESSED] No pending messages");
+            }
         } catch (Exception e) {
-            log.error("Error in message processing job: {}", e.getMessage(), e);
+            log.error("❌ [MESSAGE PROCESSING ERROR] {}", e.getMessage(), e);
         }
     }
 
@@ -37,13 +41,17 @@ public class MessageScheduler {
      */
     @Scheduled(fixedRate = 300000) // 5 minutos
     public void retryFailedMessages() {
-        log.debug("Starting failed message retry job");
+        log.debug("🔁 [SCHEDULER] Retrying failed messages...");
         
         try {
-            mensajeService.retryFailedMessages();
-            log.debug("Failed message retry job completed");
+            int retried = mensajeService.retryFailedMessages();
+            if (retried > 0) {
+                log.info("✅ [MESSAGES RETRIED] {} failed messages retried", retried);
+            } else {
+                log.debug("🔁 [RETRY COMPLETED] No failed messages to retry");
+            }
         } catch (Exception e) {
-            log.error("Error in failed message retry job: {}", e.getMessage(), e);
+            log.error("❌ [RETRY ERROR] {}", e.getMessage(), e);
         }
     }
 }

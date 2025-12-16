@@ -33,10 +33,21 @@ public class AdminController {
      */
     @GetMapping("/dashboard")
     public ResponseEntity<DashboardResponse> getDashboard() {
-        log.debug("Getting dashboard metrics");
+        log.info("📊 [DASHBOARD] Getting metrics");
         
-        DashboardResponse response = dashboardService.getDashboardMetrics();
-        return ResponseEntity.ok(response);
+        try {
+            DashboardResponse response = dashboardService.getDashboardMetrics();
+            
+            log.info("✅ [DASHBOARD] Total tickets: {}, Active advisors: {}, Avg wait: {}min", 
+                    response.summary().totalTickets(), 
+                    response.summary().activeAdvisors(),
+                    response.summary().averageWaitTime());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("❌ [DASHBOARD ERROR] {}", e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -44,10 +55,20 @@ public class AdminController {
      */
     @GetMapping("/queue/{queueType}")
     public ResponseEntity<QueueStatusResponse> getQueueStatus(@PathVariable QueueType queueType) {
-        log.debug("Getting queue status for: {}", queueType);
+        log.info("📋 [QUEUE STATUS] Getting status for: {}", queueType);
         
-        QueueStatusResponse response = dashboardService.getQueueStatus(queueType);
-        return ResponseEntity.ok(response);
+        try {
+            QueueStatusResponse response = dashboardService.getQueueStatus(queueType);
+            
+            log.info("✅ [QUEUE STATUS] {}: {} waiting, {} in progress, avg wait: {}min", 
+                    queueType, response.waitingCount(), response.inProgressCount(), 
+                    response.averageWaitTime());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("❌ [QUEUE STATUS ERROR] queueType: {}, error: {}", queueType, e.getMessage());
+            throw e;
+        }
     }
 
     /**
@@ -58,13 +79,16 @@ public class AdminController {
             @PathVariable Long id,
             @RequestParam TicketStatus status) {
         
-        log.info("Admin updating ticket {} status to {}", id, status);
+        log.info("🔄 [ADMIN UPDATE STATUS] Ticket: {}, New status: {}", id, status);
         
         try {
             ticketService.updateStatus(id, status);
+            
+            log.info("✅ [STATUS UPDATED] Ticket: {} -> {}", id, status);
+            
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
-            log.warn("Failed to update ticket {} status: {}", id, e.getMessage());
+            log.warn("❌ [UPDATE STATUS FAILED] Ticket: {}, error: {}", id, e.getMessage());
             return ResponseEntity.notFound().build();
         }
     }
@@ -77,13 +101,17 @@ public class AdminController {
             @PathVariable Long ticketId,
             @PathVariable Long advisorId) {
         
-        log.info("Admin assigning ticket {} to advisor {}", ticketId, advisorId);
+        log.info("👥 [ADMIN ASSIGN] Ticket: {} -> Advisor: {}", ticketId, advisorId);
         
         try {
             ticketService.assignToAdvisor(ticketId, advisorId);
+            
+            log.info("✅ [ASSIGNMENT SUCCESS] Ticket: {} assigned to advisor: {}", ticketId, advisorId);
+            
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
-            log.warn("Failed to assign ticket {}: {}", ticketId, e.getMessage());
+            log.warn("❌ [ASSIGNMENT FAILED] Ticket: {}, Advisor: {}, error: {}", 
+                    ticketId, advisorId, e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
@@ -129,13 +157,16 @@ public class AdminController {
             @PathVariable Long id,
             @RequestBody UpdateAdvisorStatusRequest request) {
         
-        log.info("Admin updating advisor {} status to {}", id, request.status());
+        log.info("👨‍💼 [ADMIN ADVISOR STATUS] Advisor: {}, New status: {}", id, request.status());
         
         try {
             advisorService.updateStatus(id, request.status());
+            
+            log.info("✅ [ADVISOR STATUS UPDATED] Advisor: {} -> {}", id, request.status());
+            
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
-            log.warn("Failed to update advisor {} status: {}", id, e.getMessage());
+            log.warn("❌ [ADVISOR STATUS FAILED] Advisor: {}, error: {}", id, e.getMessage());
             return ResponseEntity.notFound().build();
         }
     }

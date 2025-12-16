@@ -1,0 +1,2 @@
+# Directorio para logs de la aplicación
+# Los archivos .log serán ignorados por git pero el directorio se mantiene

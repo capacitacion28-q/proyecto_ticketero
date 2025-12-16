@@ -48,9 +48,10 @@ public class MensajeService {
      * Procesa mensajes pendientes de envío
      */
     @Transactional
-    public void processPendingMessages() {
+    public int processPendingMessages() {
         // TODO: Implementar cuando estén los métodos del repository
-        log.info("Processing pending messages - TODO: implement");
+        log.debug("Processing pending messages - TODO: implement");
+        return 0; // Retornar 0 por ahora
     }
 
     /**
@@ -71,9 +72,10 @@ public class MensajeService {
      * Reintenta mensajes fallidos
      */
     @Transactional
-    public void retryFailedMessages() {
+    public int retryFailedMessages() {
         // TODO: Implementar cuando estén los métodos del repository
-        log.info("Retrying failed messages - TODO: implement");
+        log.debug("Retrying failed messages - TODO: implement");
+        return 0; // Retornar 0 por ahora
     }
 
     // Métodos privados
