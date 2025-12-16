@@ -28,7 +28,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nationalId\": \"12345678\",\n  \"phoneNumber\": \"987654321\",\n  \"branchOffice\": \"Sucursal Centro\",\n  \"queueType\": \"GENERAL\"\n}"
+							"raw": "{\n  \"nationalId\": \"12345678\",\n  \"phoneNumber\": \"987654321\",\n  \"branchOffice\": \"Sucursal Centro\",\n  \"queueType\": \"CAJA\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/tickets",
@@ -68,14 +68,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/tickets/G01/position",
+							"raw": "{{baseUrl}}/api/tickets/C01/position",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"api",
 								"tickets",
-								"G01",
+								"C01",
 								"position"
 							]
 						},
@@ -147,12 +147,12 @@
 					}
 				},
 				{
-					"name": "Estado Cola GENERAL",
+					"name": "Estado Cola CAJA",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/admin/queue/GENERAL",
+							"raw": "{{baseUrl}}/api/admin/queue/CAJA",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -160,19 +160,19 @@
 								"api",
 								"admin",
 								"queue",
-								"GENERAL"
+								"CAJA"
 							]
 						},
-						"description": "Obtiene estado de la cola GENERAL"
+						"description": "Obtiene estado de la cola CAJA"
 					}
 				},
 				{
-					"name": "Estado Cola PRIORITY",
+					"name": "Estado Cola PERSONAL_BANKER",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/admin/queue/PRIORITY",
+							"raw": "{{baseUrl}}/api/admin/queue/PERSONAL_BANKER",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -180,19 +180,19 @@
 								"api",
 								"admin",
 								"queue",
-								"PRIORITY"
+								"PERSONAL_BANKER"
 							]
 						},
-						"description": "Obtiene estado de la cola PRIORITY"
+						"description": "Obtiene estado de la cola PERSONAL_BANKER"
 					}
 				},
 				{
-					"name": "Estado Cola VIP",
+					"name": "Estado Cola EMPRESAS",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/admin/queue/VIP",
+							"raw": "{{baseUrl}}/api/admin/queue/EMPRESAS",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -200,10 +200,10 @@
 								"api",
 								"admin",
 								"queue",
-								"VIP"
+								"EMPRESAS"
 							]
 						},
-						"description": "Obtiene estado de la cola VIP"
+						"description": "Obtiene estado de la cola EMPRESAS"
 					}
 				}
 			],
