@@ -10,9 +10,253 @@
 			"key": "baseUrl",
 			"value": "http://localhost:8081",
 			"type": "string"
+		},
+		{
+			"key": "ticketUuid",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "ticketNumber",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "ticketId",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"item": [
+		{
+			"name": "🎯 ESCENARIO COMPLETO MANUAL",
+			"item": [
+				{
+					"name": "PASO 1: 🎫 Crear Ticket",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Auto-save variables from response",
+									"if (pm.response.json()) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('ticketUuid', response.codigoReferencia);",
+									"    pm.collectionVariables.set('ticketNumber', response.numero);",
+									"    pm.collectionVariables.set('ticketId', response.id);",
+									"    console.log('✅ Variables guardadas:');",
+									"    console.log('ticketUuid:', response.codigoReferencia);",
+									"    console.log('ticketNumber:', response.numero);",
+									"    console.log('ticketId:', response.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nationalId\": \"12345678\",\n  \"phoneNumber\": \"987654321\",\n  \"branchOffice\": \"Sucursal Centro\",\n  \"queueType\": \"CAJA\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tickets",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tickets"
+							]
+						},
+						"description": "Crea ticket y guarda variables automáticamente"
+					}
+				},
+				{
+					"name": "PASO 2: ⚡ Verificar Estado (Scheduler)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tickets/{{ticketUuid}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"{{ticketUuid}}"
+							]
+						},
+						"description": "Verifica estado del ticket (scheduler automático puede haberlo cambiado a ATENDIENDO)"
+					}
+				},
+				{
+					"name": "PASO 3: 📊 Dashboard Inicial",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/summary",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"summary"
+							]
+						},
+						"description": "Ver estado inicial del dashboard"
+					}
+				},
+				{
+					"name": "PASO 4: 👨💼 Asesor Disponible",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"AVAILABLE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/advisors/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"advisors",
+								"1",
+								"status"
+							]
+						},
+						"description": "Ejecutivo se desocupa"
+					}
+				},
+				{
+					"name": "PASO 5: 🔗 Asignar Ticket",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/tickets/{{ticketId}}/assign/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"tickets",
+								"{{ticketId}}",
+								"assign",
+								"1"
+							]
+						},
+						"description": "Asignar ticket al ejecutivo"
+					}
+				},
+				{
+					"name": "PASO 6: 🏃♂️ Verificar Atendiendo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tickets/{{ticketNumber}}/position",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"{{ticketNumber}}",
+								"position"
+							]
+						},
+						"description": "Verificar que está siendo atendido"
+					}
+				},
+				{
+					"name": "PASO 7: ✅ Completar Atención",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/tickets/{{ticketId}}/status?status=COMPLETADO",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"tickets",
+								"{{ticketId}}",
+								"status"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "COMPLETADO"
+								}
+							]
+						},
+						"description": "Completar la atención"
+					}
+				},
+				{
+					"name": "PASO 8: 🔍 Verificar Final",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tickets/{{ticketNumber}}/position",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tickets",
+								"{{ticketNumber}}",
+								"position"
+							]
+						},
+						"description": "Verificar estado final del ticket"
+					}
+				},
+				{
+					"name": "PASO 9: 📈 Dashboard Final",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/summary",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"summary"
+							]
+						},
+						"description": "Dashboard final con métricas actualizadas"
+					}
+				}
+			],
+			"description": "Flujo completo paso a paso del escenario manual con variables automáticas"
+		},
 		{
 			"name": "🎫 Tickets - Público",
 			"item": [
@@ -68,14 +312,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/tickets/C01/position",
+							"raw": "{{baseUrl}}/api/tickets/{{ticketNumber}}/position",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"api",
 								"tickets",
-								"C01",
+								"{{ticketNumber}}",
 								"position"
 							]
 						},
@@ -293,7 +537,7 @@
 						"method": "PUT",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/admin/tickets/1/status?status=ATENDIENDO",
+							"raw": "{{baseUrl}}/api/admin/tickets/{{ticketId}}/status?status=COMPLETADO",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -301,13 +545,13 @@
 								"api",
 								"admin",
 								"tickets",
-								"1",
+								"{{ticketId}}",
 								"status"
 							],
 							"query": [
 								{
 									"key": "status",
-									"value": "ATENDIENDO"
+									"value": "COMPLETADO"
 								}
 							]
 						},
@@ -320,7 +564,7 @@
 						"method": "PUT",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/api/admin/tickets/1/assign/1",
+							"raw": "{{baseUrl}}/api/admin/tickets/{{ticketId}}/assign/1",
 							"host": [
 								"{{baseUrl}}"
 							],
@@ -328,7 +572,7 @@
 								"api",
 								"admin",
 								"tickets",
-								"1",
+								"{{ticketId}}",
 								"assign",
 								"1"
 							]
@@ -402,14 +646,15 @@
 	],
 	"event": [
 		{
-			"listen": "test",
+			"listen": "prerequest",
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					"// Auto-save ticket UUID from create response",
-					"if (pm.response.json() && pm.response.json().codigoReferencia) {",
-					"    pm.globals.set('ticketUuid', pm.response.json().codigoReferencia);",
-					"}"
+					"// Log current variables",
+					"console.log('🔧 Variables actuales:');",
+					"console.log('ticketUuid:', pm.collectionVariables.get('ticketUuid'));",
+					"console.log('ticketNumber:', pm.collectionVariables.get('ticketNumber'));",
+					"console.log('ticketId:', pm.collectionVariables.get('ticketId'));"
 				]
 			}
 		}
