@@ -1,0 +1,142 @@
+@startuml User Flows - Sistema Ticketero Frontend
+!theme plain
+skinparam activityStyle rectangle
+skinparam backgroundColor white
+
+title Flujos de Usuario - Sistema Ticketero
+
+|#LightBlue|FLUJO TÓTEM (Cliente)|
+start
+:Cliente accede al sistema;
+:Pantalla Home\nSelector TÓTEM/ADMIN;
+:Selecciona "TÓTEM";
+:Pantalla TÓTEM\nFormulario de ticket;
+
+partition "Crear Ticket (RF-001)" {
+  :Ingresa RUT/ID;
+  note right: Validación formato\nRUT chileno o ID extranjero
+  :Ingresa teléfono;
+  note right: Formato +56XXXXXXXXX\no XXXXXXXXX
+  :Selecciona tipo de cola;
+  note right: CAJA, PERSONAL_BANKER\nEMPRESAS, GERENCIA
+  :Presiona "Crear Ticket";
+  
+  if (¿Datos válidos?) then (no)
+    :Muestra errores\nde validación;
+    backward:Corrige datos;
+  else (sí)
+    :Loading spinner;
+    if (¿Cliente tiene ticket activo?) then (sí)
+      :Error 409\n"Ya tienes un ticket activo";
+      stop
+    else (no)
+      :Sistema crea ticket;
+      :Calcula posición y tiempo;
+      note right: RF-003: Posición en cola\nTiempo estimado
+    endif
+  endif
+}
+
+partition "Confirmación (RF-002)" {
+  :Pantalla de éxito;
+  :Muestra número de ticket;
+  note right: Formato: C01, P15, E03, G02
+  :Muestra posición: #5;
+  :Muestra tiempo estimado: 25 min;
+  :Mensaje: "Puedes salir de la sucursal";
+  note right: Notificación Telegram enviada\nautomáticamente por backend
+}
+
+partition "Consultar Estado (RF-006)" {
+:Opción: "Consultar mi ticket";
+if (¿Quiere consultar?) then (sí)
+  :Ingresa número de ticket;
+  :Sistema consulta estado;
+  :Muestra estado actualizado;
+  note right: EN_ESPERA, PROXIMO\nATENDIENDO, etc.
+else (no)
+  :Finaliza sesión;
+endif
+}
+
+:Cliente sale de sucursal;
+note right: Recibe notificaciones\nautomáticas vía Telegram
+stop
+
+|#LightGreen|FLUJO ADMIN (Supervisor)|
+start
+:Supervisor accede al sistema;
+:Pantalla Home\nSelector TÓTEM/ADMIN;
+:Selecciona "ADMIN";
+:Pantalla ADMIN\nDashboard completo;
+
+partition "Dashboard Principal (RF-007)" {
+  :Carga dashboard inicial;
+  :Muestra métricas en tiempo real;
+  note right: Tickets por estado\nColas activas\nAsesores disponibles
+  
+  fork
+    :Panel de Colas;
+    note right: RF-005: Estado de\ncada tipo de cola
+  fork again
+    :Panel de Asesores;
+    note right: RF-004: Asesores\ndisponibles/ocupados
+  fork again
+    :Métricas Generales;
+    note right: Tickets atendidos\nTiempos promedio
+  end fork
+}
+
+partition "Monitoreo en Tiempo Real" {
+  :WebSocket conectado;
+  repeat
+    :Actualización automática;
+    note right: Cada 5 segundos\nRF-007: Tiempo real
+    :Actualiza contadores;
+    :Actualiza estado de colas;
+    :Actualiza estado de asesores;
+    
+    if (¿Situación crítica?) then (sí)
+      :Muestra alerta;
+      note right: Cola > 15 personas\nAsesor offline inesperado
+    endif
+  repeat while (¿Dashboard activo?)
+}
+
+partition "Gestión de Asesores" {
+  if (¿Cambiar estado asesor?) then (sí)
+    :Selecciona asesor;
+    :Cambia estado;
+    note right: AVAILABLE → BUSY\nBUSY → OFFLINE
+    :Confirma cambio;
+    :Sistema actualiza;
+  endif
+}
+
+:Supervisor monitorea\ncontinuamente;
+stop
+
+|#Orange|CASOS DE ERROR|
+start
+:Error detectado;
+
+if (¿Tipo de error?) then (Validación)
+  :Muestra mensaje en formulario;
+  :Resalta campos con error;
+  :Usuario corrige y reintenta;
+elseif (¿Tipo de error?) then (Red/API)
+  :Muestra mensaje de error;
+  :Botón "Reintentar";
+  :Loading durante reintento;
+elseif (¿Tipo de error?) then (Ticket activo)
+  :Modal con información;
+  :Muestra ticket existente;
+  :Opción consultar estado;
+else (Error inesperado)
+  :Mensaje genérico;
+  :Opción volver al inicio;
+endif
+
+stop
+
+@enduml

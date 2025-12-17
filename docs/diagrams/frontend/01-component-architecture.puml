@@ -1,0 +1,115 @@
+@startuml Component Architecture - Sistema Ticketero Frontend
+!theme plain
+skinparam componentStyle rectangle
+skinparam backgroundColor white
+
+package "Frontend Application" {
+  
+  package "Routes (SvelteKit)" {
+    component [Home\n+page.svelte] as Home
+    component [TÓTEM\n/totem/+page.svelte] as Totem
+    component [ADMIN\n/admin/+page.svelte] as Admin
+  }
+  
+  package "Layout Components" {
+    component [Global Layout\n+layout.svelte] as Layout
+    component [Navigation\nNavigation.svelte] as Nav
+    component [Header\nHeader.svelte] as Header
+  }
+  
+  package "TÓTEM Components" {
+    component [Ticket Form\nTicketForm.svelte] as TicketForm
+    component [Queue Selector\nQueueSelector.svelte] as QueueSelector
+    component [Ticket Display\nTicketDisplay.svelte] as TicketDisplay
+    component [Success Message\nSuccessMessage.svelte] as Success
+  }
+  
+  package "ADMIN Components" {
+    component [Dashboard\nDashboard.svelte] as Dashboard
+    component [Queue Status\nQueueStatus.svelte] as QueueStatus
+    component [Advisor Panel\nAdvisorPanel.svelte] as AdvisorPanel
+    component [Metrics Cards\nMetricsCards.svelte] as Metrics
+    component [Real-time Updates\nRealtimeUpdates.svelte] as Realtime
+  }
+  
+  package "Shared Components" {
+    component [Loading Spinner\nLoading.svelte] as Loading
+    component [Error Message\nErrorMessage.svelte] as Error
+    component [Modal\nModal.svelte] as Modal
+    component [Button\nButton.svelte] as Button
+    component [Input\nInput.svelte] as Input
+  }
+  
+  package "Stores (State Management)" {
+    component [Tickets Store\ntickets.ts] as TicketsStore
+    component [Dashboard Store\ndashboard.ts] as DashboardStore
+    component [UI Store\nui.ts] as UIStore
+  }
+  
+  package "Services Layer" {
+    component [API Service\napi.ts] as API
+    component [WebSocket Service\nwebsocket.ts] as WS
+    component [Notification Service\nnotifications.ts] as Notifications
+  }
+  
+  package "Types & Utils" {
+    component [TypeScript Types\ntypes.ts] as Types
+    component [Utilities\nutils.ts] as Utils
+    component [Constants\nconstants.ts] as Constants
+  }
+}
+
+' Layout relationships
+Layout --> Home
+Layout --> Totem
+Layout --> Admin
+Layout --> Header
+Layout --> Nav
+
+' TÓTEM page relationships
+Totem --> TicketForm
+Totem --> Success
+TicketForm --> QueueSelector
+TicketForm --> TicketDisplay
+
+' ADMIN page relationships
+Admin --> Dashboard
+Dashboard --> QueueStatus
+Dashboard --> AdvisorPanel
+Dashboard --> Metrics
+Dashboard --> Realtime
+
+' Shared component usage
+TicketForm --> Loading
+TicketForm --> Error
+TicketForm --> Button
+TicketForm --> Input
+Dashboard --> Loading
+Dashboard --> Error
+Dashboard --> Modal
+
+' Store connections
+TicketForm --> TicketsStore
+Dashboard --> DashboardStore
+Success --> UIStore
+Realtime --> DashboardStore
+
+' Service connections
+TicketsStore --> API
+DashboardStore --> API
+Realtime --> WS
+TicketForm --> Notifications
+
+' Utility connections
+API --> Types
+TicketsStore --> Types
+DashboardStore --> Types
+TicketForm --> Utils
+Dashboard --> Constants
+
+note right of Totem : RF-001: Crear Ticket\nRF-006: Consultar Estado
+note right of Admin : RF-007: Panel Monitoreo\nRF-005: Gestionar Colas
+note bottom of API : RF-001, RF-003, RF-006\nRF-007 endpoints
+note bottom of WS : RF-007: Updates en\ntiempo real
+
+@enduml

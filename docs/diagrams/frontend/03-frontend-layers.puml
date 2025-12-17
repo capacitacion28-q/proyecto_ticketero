@@ -1,0 +1,129 @@
+@startuml Frontend Layers Architecture - Sistema Ticketero
+!theme plain
+skinparam packageStyle rectangle
+skinparam backgroundColor white
+
+title Arquitectura de Capas Frontend - Sistema Ticketero
+
+package "CAPA DE PRESENTACIÓN (Pages/Views)" as Presentation {
+  component [Home Page\n+page.svelte] as HomePage
+  component [TÓTEM Page\n/totem/+page.svelte] as TotemPage
+  component [ADMIN Page\n/admin/+page.svelte] as AdminPage
+  component [Global Layout\n+layout.svelte] as Layout
+  
+  note right of HomePage : Selector TÓTEM/ADMIN\nPunto de entrada
+  note right of TotemPage : RF-001: Crear Ticket\nRF-006: Consultar Estado
+  note right of AdminPage : RF-007: Panel Monitoreo\nRF-005: Gestionar Colas
+}
+
+package "CAPA DE COMPONENTES (UI Components)" as Components {
+  package "TÓTEM Components" {
+    component [TicketForm.svelte] as TicketForm
+    component [QueueSelector.svelte] as QueueSelector
+    component [TicketDisplay.svelte] as TicketDisplay
+    component [SuccessMessage.svelte] as SuccessMessage
+  }
+  
+  package "ADMIN Components" {
+    component [Dashboard.svelte] as Dashboard
+    component [QueueStatus.svelte] as QueueStatus
+    component [AdvisorPanel.svelte] as AdvisorPanel
+    component [MetricsCards.svelte] as MetricsCards
+    component [RealtimeUpdates.svelte] as RealtimeUpdates
+  }
+  
+  package "Shared Components" {
+    component [Button.svelte] as Button
+    component [Input.svelte] as Input
+    component [Loading.svelte] as Loading
+    component [ErrorMessage.svelte] as ErrorMessage
+    component [Modal.svelte] as Modal
+  }
+}
+
+package "CAPA DE LÓGICA DE NEGOCIO (Services/Hooks)" as BusinessLogic {
+  component [Ticket Service\nticketService.ts] as TicketService
+  component [Dashboard Service\ndashboardService.ts] as DashboardService
+  component [Validation Service\nvalidationService.ts] as ValidationService
+  component [Notification Service\nnotificationService.ts] as NotificationService
+  component [WebSocket Manager\nwebsocketManager.ts] as WebSocketManager
+  
+  note right of TicketService : RF-001, RF-003, RF-006\nLógica de tickets
+  note right of DashboardService : RF-007: Lógica dashboard\nRF-005: Gestión colas
+  note right of ValidationService : Validación RUT, teléfono\nReglas de negocio frontend
+}
+
+package "CAPA DE ESTADO (Store/Context)" as StateLayer {
+  component [Tickets Store\ntickets.ts] as TicketsStore
+  component [Dashboard Store\ndashboard.ts] as DashboardStore
+  component [UI Store\nui.ts] as UIStore
+  component [WebSocket Store\nwebsocket.ts] as WebSocketStore
+  
+  note right of TicketsStore : Estado tickets\nHistorial, actual
+  note right of DashboardStore : Estado dashboard\nColas, asesores, métricas
+  note right of UIStore : Estado UI global\nModals, notificaciones
+}
+
+package "CAPA DE DATOS (API Layer/HTTP Client)" as DataLayer {
+  component [API Client\napiClient.ts] as ApiClient
+  component [HTTP Interceptors\ninterceptors.ts] as Interceptors
+  component [WebSocket Client\nwebsocketClient.ts] as WebSocketClient
+  component [Error Handler\nerrorHandler.ts] as ErrorHandler
+  
+  note right of ApiClient : Axios configurado\n11 endpoints HTTP
+  note right of WebSocketClient : Conexión tiempo real\nRF-007: Updates automáticos
+}
+
+package "BACKEND API" as Backend {
+  component [Spring Boot API\nREST Endpoints] as SpringAPI
+  component [WebSocket Server\nReal-time Updates] as WSServer
+  
+  note right of SpringAPI : RF-001 a RF-008\n11 endpoints documentados
+}
+
+' Flujo de datos descendente
+Presentation --> Components
+Components --> BusinessLogic
+BusinessLogic --> StateLayer
+StateLayer --> DataLayer
+DataLayer --> Backend
+
+' Relaciones específicas
+HomePage --> Layout
+TotemPage --> TicketForm
+TotemPage --> SuccessMessage
+AdminPage --> Dashboard
+
+TicketForm --> QueueSelector
+TicketForm --> TicketDisplay
+TicketForm --> Button
+TicketForm --> Input
+TicketForm --> Loading
+
+Dashboard --> QueueStatus
+Dashboard --> AdvisorPanel
+Dashboard --> MetricsCards
+Dashboard --> RealtimeUpdates
+
+TicketForm --> TicketService
+Dashboard --> DashboardService
+TicketService --> ValidationService
+RealtimeUpdates --> WebSocketManager
+
+TicketService --> TicketsStore
+DashboardService --> DashboardStore
+WebSocketManager --> WebSocketStore
+NotificationService --> UIStore
+
+TicketsStore --> ApiClient
+DashboardStore --> ApiClient
+WebSocketStore --> WebSocketClient
+
+ApiClient --> Interceptors
+ApiClient --> ErrorHandler
+WebSocketClient --> ErrorHandler
+
+ApiClient --> SpringAPI
+WebSocketClient --> WSServer
+
+@enduml
