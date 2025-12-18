@@ -1,14 +1,13 @@
 import { api } from './api';
-import type { 
-  Ticket, 
-  CreateTicketRequest, 
-  CreateTicketResponse 
+import type {
+  Ticket,
+  CreateTicketRequest
 } from '../types';
 
 export class TicketService {
   // Crear nuevo ticket
-  static async createTicket(request: CreateTicketRequest): Promise<CreateTicketResponse> {
-    return api.post<CreateTicketResponse>('/tickets', request);
+  static async createTicket(request: CreateTicketRequest): Promise<Ticket> {
+    return api.post<Ticket>('/tickets', request);
   }
 
   // Consultar ticket por código de referencia

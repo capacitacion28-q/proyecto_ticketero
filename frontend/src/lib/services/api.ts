@@ -1,6 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
 import { API_BASE_URL } from '../utils/constants';
-import type { ApiResponse } from '../types';
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
@@ -31,20 +30,20 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     console.error('❌ API Response Error:', error.response?.data || error.message);
-    
+
     // Handle common errors
     if (error.response?.status === 409) {
       throw new Error('Ya existe un ticket activo para este RUT');
     }
-    
+
     if (error.response?.status === 404) {
       throw new Error('Recurso no encontrado');
     }
-    
+
     if (error.response?.status >= 500) {
       throw new Error('Error interno del servidor');
     }
-    
+
     throw new Error(error.response?.data?.message || 'Error de conexión');
   }
 );
@@ -52,23 +51,23 @@ apiClient.interceptors.response.use(
 // Generic API methods
 export const api = {
   get: async <T>(url: string): Promise<T> => {
-    const response = await apiClient.get<ApiResponse<T>>(url);
-    return response.data.data;
+    const response = await apiClient.get<T>(url);
+    return response.data;
   },
 
   post: async <T, D = any>(url: string, data?: D): Promise<T> => {
-    const response = await apiClient.post<ApiResponse<T>>(url, data);
-    return response.data.data;
+    const response = await apiClient.post<T>(url, data);
+    return response.data;
   },
 
   put: async <T, D = any>(url: string, data?: D): Promise<T> => {
-    const response = await apiClient.put<ApiResponse<T>>(url, data);
-    return response.data.data;
+    const response = await apiClient.put<T>(url, data);
+    return response.data;
   },
 
   delete: async <T>(url: string): Promise<T> => {
-    const response = await apiClient.delete<ApiResponse<T>>(url);
-    return response.data.data;
+    const response = await apiClient.delete<T>(url);
+    return response.data;
   }
 };
 
