@@ -14,7 +14,7 @@
   // Form data
   let formData = {
     nationalId: '',
-    telefono: '',
+    phoneNumber: '',
     branchOffice: BRANCH_OFFICES[0],
     queueType: QueueType.CAJA
   };
@@ -22,7 +22,7 @@
   // Form validation
   let errors = {
     nationalId: '',
-    telefono: ''
+    phoneNumber: ''
   };
   
   let showSuccessModal = false;
@@ -33,15 +33,16 @@
       ? 'Formato de RUT inválido (ej: 12345678-9)' 
       : '';
     
-    errors.telefono = formData.telefono && !validatePhone(formData.telefono)
+    errors.phoneNumber = formData.phoneNumber && !validatePhone(formData.phoneNumber)
       ? 'Formato de teléfono inválido'
       : '';
   }
   
   $: isFormValid = formData.nationalId && 
+                   formData.phoneNumber &&
                    formData.branchOffice && 
                    !errors.nationalId && 
-                   !errors.telefono;
+                   !errors.phoneNumber;
   
   async function handleSubmit() {
     if (!isFormValid) return;
@@ -54,7 +55,7 @@
       // Reset form
       formData = {
         nationalId: '',
-        telefono: '',
+        phoneNumber: '',
         branchOffice: BRANCH_OFFICES[0],
         queueType: QueueType.CAJA
       };
@@ -100,11 +101,12 @@
       
       <!-- Teléfono -->
       <Input
-        label="Teléfono (opcional)"
+        label="Teléfono"
         type="tel"
         placeholder="+56912345678"
-        bind:value={formData.telefono}
-        error={errors.telefono}
+        bind:value={formData.phoneNumber}
+        error={errors.phoneNumber}
+        required
       />
       
       <!-- Sucursal -->

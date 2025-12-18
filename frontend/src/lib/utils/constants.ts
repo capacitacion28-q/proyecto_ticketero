@@ -1,8 +1,9 @@
 import { QueueType } from '../types';
+import { ENV } from './env';
 
 // API Configuration
-export const API_BASE_URL = 'http://localhost:8080/api';
-export const WEBSOCKET_URL = 'ws://localhost:8080/ws';
+export const API_BASE_URL = `${ENV.API_URL}/api`;
+export const WEBSOCKET_URL = ENV.WS_URL;
 
 // UI Constants
 export const REFRESH_INTERVAL = 5000; // 5 segundos

@@ -53,7 +53,7 @@ export interface Advisor {
 // DTOs para requests
 export interface CreateTicketRequest {
   nationalId: string;
-  telefono?: string;
+  phoneNumber: string;
   branchOffice: string;
   queueType: QueueType;
 }
